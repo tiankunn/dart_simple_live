@@ -1,0 +1,82 @@
+name: Build SimpleLive All APK (Phone + TV)
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-phone:
+    name: 📱 手机版 simple_live_app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.0"
+          channel: stable
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Pub Get
+        working-directory: simple_live_app
+        run: flutter pub get
+        env:
+          PUB_HOSTED_URL: https://pub.flutter-io.cn
+          FLUTTER_STORAGE_BASE_URL: https://storage.flutter-io.cn
+
+      - name: Build Release APK
+        working-directory: simple_live_app
+        run: >
+          flutter build apk
+          --release
+          --split-per-abi
+          --dart-define=APP_ENV=prod
+
+      - name: Upload Phone APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpleLive-手机版APK
+          path: simple_live_app/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+  build-tv:
+    name: 📺 TV盒子版 simple_live_tv_app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.0"
+          channel: stable
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Pub Get
+        working-directory: simple_live_tv_app
+        run: flutter pub get
+        env:
+          PUB_HOSTED_URL: https://pub.flutter-io.cn
+          FLUTTER_STORAGE_BASE_URL: https://storage.flutter-io.cn
+
+      - name: Build Release APK
+        working-directory: simple_live_tv_app
+        run: >
+          flutter build apk
+          --release
+          --split-per-abi
+          --dart-define=APP_ENV=prod
+
+      - name: Upload TV APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpleLive-TV版APK
+          path: simple_live_tv_app/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
